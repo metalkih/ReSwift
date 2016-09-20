@@ -9,3 +9,12 @@
 import Foundation
 
 public protocol StateType { }
+public protocol Markable {
+    func isMarkedUpdated() -> Bool
+}
+
+extension Markable {
+    func isMarkedUpdated() -> Bool {
+        return false
+    }
+}

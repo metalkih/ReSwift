@@ -92,7 +92,7 @@ public class Store<State: StateType>: StoreType {
     #if swift(>=3)
     public func subscribe<S: StoreSubscriber>(_ subscriber: S)
         where S.StoreSubscriberStateType == State {
-            subscribe(subscriber, selector: nil)
+            subscribe(subscriber, selector: nil, markablesSelector: nil)
     }
     #else
     public func subscribe<S: StoreSubscriber
@@ -101,13 +101,21 @@ public class Store<State: StateType>: StoreType {
     }
     #endif
 
+    public func subscribe<SelectedState, S: StoreSubscriber>
+        (subscriber: S, markablesSelector: ((State) -> [Markable])?)
+        where S.StoreSubscriberStateType == SelectedState {
+        subscribe(subscriber, selector: nil, markablesSelector: markablesSelector)
+    }
+
     #if swift(>=3)
     public func subscribe<SelectedState, S: StoreSubscriber>
-        (_ subscriber: S, selector: ((State) -> SelectedState)?)
+        (_ subscriber: S, selector: ((State) -> SelectedState)?,
+         markablesSelector: ((State) -> [Markable])?)
         where S.StoreSubscriberStateType == SelectedState {
             if !_isNewSubscriber(subscriber: subscriber) { return }
 
-            subscriptions.append(Subscription(subscriber: subscriber, selector: selector))
+            subscriptions.append(Subscription(subscriber: subscriber, selector: selector,
+                                              markablesSelector: markablesSelector))
 
             if let state = self.state {
                 subscriber._newState(state: selector?(state) ?? state)
